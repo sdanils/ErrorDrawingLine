@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using TeilorClass;
 
 namespace DrawingApp
 {
     public class PointGenerator
     {
-        public static List<Point> GeneratePointsWithAngle(Point start, Point end, double stepSize, double r, int numTerms)
+        public static List<Point> GeneratePointsWithAngle(Point start, Point end, double stepSize, int numTerms)
         {
             List<Point> points = new List<Point>();
 
@@ -36,6 +37,15 @@ namespace DrawingApp
             }
 
             return points;
+        }
+
+        public static double GetError(List<Point> points, Point end)
+        {
+            int num = points.Count;
+            Point first = points[num - 1], second = points[num - 2];
+
+            double minError = Math.Min(DistanceBetween(first.X, first.Y, end.X, end.Y), DistanceBetween(second.X, second.Y, end.X, end.Y));
+            return minError;
         }
 
         private static double DistanceBetween(double x1, double y1, double x2, double y2)

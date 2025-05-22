@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using TeilorClass;
+using StatisticManagerNM;
 
 namespace DrawingApp
 {
@@ -10,7 +11,7 @@ namespace DrawingApp
     {
         private TextBox x1TextBox, y1TextBox, x2TextBox, y2TextBox, errorTextBox, termsTextBox;
         private Label labelCurrentEr;
-        private Button drawButton;
+        private Button drawButton, statisticButton;
         private List<Point> pointsToDraw = new List<Point>();
         Panel controlPanel;
         private Panel drawingPanel;
@@ -61,8 +62,18 @@ namespace DrawingApp
             controlPanel.Controls.Add(termsTextBox);
 
             controlPanel.Controls.Add(new Label { Text = "Current error:", Left = termsTextBox.Right + 10, Top = 10, Width = 100, Height = 15 });
-            labelCurrentEr = new Label { Text = "-", Left = termsTextBox.Right + 105, Top = 10, Width = 40, Height = 15 };
+            labelCurrentEr = new Label { Text = "-", Left = termsTextBox.Right + 110, Top = 10, Width = 40, Height = 15 };
             controlPanel.Controls.Add(labelCurrentEr);
+
+            statisticButton = new Button
+            {
+                Text = "Static",
+                Left = termsTextBox.Right + 170,
+                Top = 10,
+                Width = 80
+            };
+            statisticButton.Click += StaticButton_Click;
+            controlPanel.Controls.Add(statisticButton);
 
             drawingPanel = new Panel
             {
@@ -74,7 +85,24 @@ namespace DrawingApp
             this.Controls.Add(drawingPanel);
             this.Controls.Add(controlPanel);
         }
+        private void StaticButton_Click(object sender, EventArgs e)
+        {
+            if (int.TryParse(x1TextBox.Text, out int x1) &&
+                int.TryParse(y1TextBox.Text, out int y1) &&
+                int.TryParse(x2TextBox.Text, out int x2) &&
+                int.TryParse(y2TextBox.Text, out int y2))
+            {
+                Point start = new Point(x1, y1);
+                Point end = new Point(x2, y2);
 
+                StatisticManager.CreateStatistic(start, end);
+                StatisticManager.CreatePlotFromData(start, end);
+            }
+            else
+            {
+                MessageBox.Show("Please enter valid integer coordinates.");
+            }
+        }
         private void DrawButton_Click(object sender, EventArgs e)
         {
             if (int.TryParse(x1TextBox.Text, out int x1) &&
@@ -84,12 +112,15 @@ namespace DrawingApp
                 int.TryParse(errorTextBox.Text, out int error) &&
                 int.TryParse(termsTextBox.Text, out int terms))
             {
-                Point p1 = new Point(x1, y1);
-                Point p2 = new Point(x2, y2);
+                Point start = new Point(x1, y1);
+                Point end = new Point(x2, y2);
 
-                pointsToDraw = PointGenerator.GeneratePointsWithAngle(p1, p2, 3, error, terms);
-                pointsToDraw.Add(p1);
-                pointsToDraw.Add(p2);
+                pointsToDraw = PointGenerator.GeneratePointsWithAngle(start, end, 3, terms);
+                double err = PointGenerator.GetError(pointsToDraw, end);
+                labelCurrentEr.Text = $"{err}";
+
+                pointsToDraw.Add(start);
+                pointsToDraw.Add(end);
 
                 drawingPanel.Invalidate();
             }
